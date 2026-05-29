@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+    <apikit:config name="integracaosalesforcedev-config" api="resource::7cef7e3c-d931-4505-85f7-fab6374640fc:integracaosalesforcedev:1.3.0:raml:zip:integracaosalesforcedev.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <flow name="integracaosalesforcedev-main">
+        <http:listener config-ref="integracaosalesforcedev-httpListenerConfig-Global" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="integracaosalesforcedev-config" />
+		<error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="integracaosalesforcedev-console">
+        <http:listener config-ref="integracaosalesforcedev-httpListenerConfig-Global" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="integracaosalesforcedev-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="get:\clientes:integracaosalesforcedev-config">
+       <set-variable
+            variableName="limit"
+            value="#[attributes.queryParams.limit default 10]"
+            doc:name="Cria variavel 'limit'" />
+
+        <choice>
+
+            <when expression="#[isBlank(attributes.queryParams.name)]">
+
+                <logger level="INFO" message="Buscando todos os clientes" />
+
+                <salesforce:query
+                    doc:name="Busca todos os clientes"
+                    config-ref="Salesforce_Config_Global">
+
+                    <salesforce:salesforce-query><![CDATA[
+SELECT Id, Name, Type, Industry, Phone
+FROM Account
+LIMIT :limit
+]]></salesforce:salesforce-query>
+
+                    <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+    limit : vars.limit as Number
+}]]]></salesforce:parameters>
+
+                </salesforce:query>
+
+            </when>
+
+            <otherwise>
+
+                <logger level="INFO" message="Buscar clientes pelo nome" />
+
+                <salesforce:query
+                    doc:name="Busca pelo nome"
+                    config-ref="Salesforce_Config_Global">
+
+                    <salesforce:salesforce-query><![CDATA[
+SELECT Id, Name, Type, Industry, Phone
+FROM Account
+WHERE Name LIKE ':searchStr'
+LIMIT :limit
+]]></salesforce:salesforce-query>
+
+                    <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+    searchStr : ('%' ++ (attributes.queryParams.name default '') ++ '%') as String,
+    limit : vars.limit as Number
+}]]]></salesforce:parameters>
+
+                </salesforce:query>
+
+            </otherwise>
+
+        </choice>
+
+        <ee:transform doc:name="Retorna os clientes">
+            <ee:message>
+                <ee:set-payload><![CDATA[
+%dw 2.0
+output application/json
+---
+{
+    data: (payload default []) map(client, i) -> {
+        Id: client.Id,
+        Name: client.Name,
+        Type: client.'Type',
+        Industry: client.Industry,
+        Phone: client.Phone
+    },
+    success: true,
+    message: "Lista de clientes"
+}
+]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+       
+    </flow>
+    <flow name="get:\clientes\(id):integracaosalesforcedev-config">
+        <logger level="INFO" message="Buscar cliente pelo ID" />
+
+        <salesforce:query
+            doc:name="Busca pelo ID"
+            config-ref="Salesforce_Config_Global">
+
+            <salesforce:salesforce-query><![CDATA[
+SELECT Id, Name, Type, Industry, Phone
+FROM Account
+WHERE Id = ':id'
+LIMIT 1
+]]></salesforce:salesforce-query>
+
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+    id : attributes.uriParams.'id' as String
+}]]]></salesforce:parameters>
+
+        </salesforce:query>
+
+        <choice>
+
+            <when expression="#[isEmpty(payload)]">
+
+                <set-variable variableName="httpStatus" value="404" />
+
+                <ee:transform doc:name="Retorna um objeto vazio">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[
+%dw 2.0
+output application/json
+---
+{
+    data: null,
+    success: false,
+    message: "Cliente não foi encontrado"
+}
+]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+
+            </when>
+
+            <otherwise>
+
+                <ee:transform doc:name="Retorna cliente pelo ID">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[
+%dw 2.0
+output application/json
+
+var client = payload[0]
+
+---
+{
+    data: {
+        Id: client.Id,
+        Name: client.Name,
+        Type: client.'Type',
+        Industry: client.Industry,
+        Phone: client.Phone
+    },
+    success: true,
+    message: "Cliente encontrado"
+}
+]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+
+            </otherwise>
+
+        </choice>
+
+        <error-handler>
+
+            <on-error-propagate
+                type="SALESFORCE:INVALID_INPUT"
+                enableNotifications="true"
+                logException="true">
+
+                <set-variable variableName="httpStatus" value="400" />
+
+                <ee:transform doc:name="Retorna erro - ID invalido">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[
+%dw 2.0
+output application/json
+---
+{
+    data: null,
+    success: false,
+    message: "ID invalido"
+}
+]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+
+            </on-error-propagate>
+
+        </error-handler>
+    </flow>
+</mule>

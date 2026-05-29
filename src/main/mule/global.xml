@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<salesforce:sfdc-config name="Salesforce_Config_Global" doc:name="Salesforce Config" doc:id="f3ecd418-fef8-4c95-8864-6c73ce55a9de" >
+		<salesforce:basic-connection username="${salesforce.username}" password="${salesforce.password}" securityToken="${salesforce.securityToken}" url="https://login.salesforce.com/services/Soap/u/64.0"/>
+	</salesforce:sfdc-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="56dff618-4ab3-44a9-9b22-ee5fd8dd3b92" file="${env}.properties" />
+	<global-property doc:name="Global Property" doc:id="f0c66b36-3d6e-47a0-8441-f68046cb9041" name="env" value="dev" />
+
+	<!-- HTTP Listener -->
+	<http:listener-config name="integracaosalesforcedev-httpListenerConfig-Global">
+        <http:listener-connection host="0.0.0.0" port="${http.port}" />
+    </http:listener-config>	
+
+</mule>

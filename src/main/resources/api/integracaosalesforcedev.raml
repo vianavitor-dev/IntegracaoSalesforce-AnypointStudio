@@ -1,0 +1,115 @@
+#%RAML 1.0
+title: IntegracaoSalesforceDev
+baseUri: http://localhost:8080
+mediaType: application/json
+version: 1.0
+
+# criando tipo para validação dos dados
+types:
+  User:
+    properties:
+      Id: string
+      Name: string
+      Type: string
+      Industry: string
+      Phone: string
+  Resp-Array:
+    properties:
+      success: boolean
+      data: 
+        items: User
+        default: []
+        required: false
+      message: string
+  Resp-One:
+    properties:
+      success: boolean
+      data: 
+        type: User
+        required: false
+      message: string
+  
+/clientes:
+  get:
+    description: Lista as informações de até 10 clientes (por padrão)
+    queryParameters:
+      name: 
+        displayName: Nome
+        description: Busca os clients com nome parecido com o informado
+        type: string
+        required: false
+      limit:
+        displayName: Tamanho máximo da lista
+        description: Até quantos clientes devem ser exibidos no máximo
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+        required: true
+      
+    responses:
+      200:
+        body:
+          application/json:
+            type: Resp-Array
+            example: {
+              success: true,
+              data: [
+                {
+                  Id: "0015g00000ABC123",
+                  "Name": "Empresa XPTO",
+                  "Type": "Customer",
+                  "Industry": "Retail",
+                  "Phone": "+55 11 99999-9999"
+                },
+                {
+                  "Id": "1021p09320GGM000",
+                  "Name": "Empresa Ubsoft",
+                  "Type": "VIP Customer",
+                  "Industry": "Games",
+                  "Phone": "+12 33 99999-9999"
+                }
+            ],
+              message: "Lista de clientes"
+            }
+
+  /{id}:
+    uriParameters:
+      id: 
+        type: string
+        required: true
+    get:
+      description: Exibe as informações de um usuário com base no ID passado
+      responses:
+        200:
+          body:
+            application/json:
+              type: Resp-One
+              example: {
+                success: true,
+                data: {
+                  "Id": "0015g00000ABC123",
+                  "Name": "Empresa XPTO",
+                  "Type": "Customer",
+                  "Industry": "Retail",
+                  "Phone": "+55 11 99999-9999"
+                },
+                message: "Cliente encontrado"
+              }
+        400:
+          body:
+            application/json:
+              type: Resp-One
+              example: {
+                success: false,
+                message: "ID invalido"
+              }
+        404:
+          body:
+            application/json:
+              type: Resp-One
+              example: {
+                success: false,
+                message: "Cliente não foi encontrado"
+              }
+                
